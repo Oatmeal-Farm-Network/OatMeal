@@ -34,7 +34,8 @@ function App() {
     <Router>
       <GlobalStyle />
       <Routes>
-        <Route path="/" element={<DirectoryList />} />
+        {/*<Route path="/" element={<DirectoryList />} /> */}
+        <Route path="/" element={<Navigate to="/directory/agricultural-associations" replace />} />
         <Route path="/directory/:directoryType" element={<DirectoryDetail />} />
         {/* Redirect any other paths to the main page */}
         <Route path="*" element={<Navigate to="/" replace />} />
