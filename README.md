@@ -40,8 +40,9 @@ Backend Setup (FastAPI)
 cd backend
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+pip install django djangorestframework mssql-django django-cors-headers
+python manage.py migrate    
+python manage.py runserver  
 ```
 
 **Windows (PowerShell):**
@@ -49,8 +50,9 @@ uvicorn main:app --reload
 cd backend
 python -m venv venv
 .\venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+pip install django djangorestframework mssql-django django-cors-headers
+python manage.py migrate    
+python manage.py runserver  
 ```
 Regular Usage (After Initial Setup)
 **Frontend:**
@@ -63,14 +65,14 @@ npm run dev
 ```bash
 cd backend
 source venv/bin/activate
-uvicorn main:app --reload
+python manage.py runserver  
 ```
 
 **Backend (Windows):**
 ```powershell
 cd backend
 .\venv\Scripts\activate
-uvicorn main:app --reload
+python manage.py runserver  
 ```
 Environment Variables
 If required, create a `.env` file inside `backend/` and/or `frontend/` with values like:
