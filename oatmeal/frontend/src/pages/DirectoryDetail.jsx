@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../config'; // We'll create this config file next
+import agriAssociaLogo from '../images/agri_associa.png';
+import agricultureAssociationLogo from '../images/Agriculture Association.jpeg';
+import photoNotAvailable from '../images/photo not available .jpg';
 
 // Mapping from URL slug to the BusinessType expected by the backend
 const DIRECTORY_TYPE_TO_BUSINESS_TYPE = {
@@ -33,13 +36,19 @@ const DIRECTORY_TYPE_TO_BUSINESS_TYPE = {
 
 const DirectoryDetail = () => {
     const { directoryType } = useParams();
+    const navigate = useNavigate();
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
     const [businesses, setBusinesses] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedState, setSelectedState] = useState('');
+    const [nameFilter, setNameFilter] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     // const businessType = DIRECTORY_TYPE_TO_BUSINESS_TYPE[directoryType] || directoryType;
     const businessType = '8';
@@ -116,121 +125,299 @@ const DirectoryDetail = () => {
         fetchBusinesses();
     }, [selectedCountry, selectedState, businessType]);
 
-    // Inline styles for simplicity
-    const pageStyle = { maxWidth: '900px', margin: '20px auto', padding: '20px', fontFamily: 'Arial, sans-serif' };
-    const filterStyle = { marginBottom: '20px', padding: '10px', border: '1px solid #eee', borderRadius: '5px' };
-    //const selectStyle = { marginRight: '10px', padding: '8px', borderRadius: '4px' };
-    const listStyle = { listStyleType: 'none', padding: 0 };
-    const listItemStyle = { borderBottom: '1px solid #eee', padding: '10px 0' };
-    const filterBarStyle = {
-    display: 'flex',
-    gap: '10px',
-    alignItems: 'center',
-    marginBottom: '20px',
-    flexWrap: 'wrap'
+    const handleCountrySearch = () => {
+        // Trigger search when country search button is clicked
+        if (selectedCountry) {
+            // The useEffect will handle the actual fetching
+        }
     };
 
-    const selectStyle = {
-    padding: '10px',
-    borderRadius: '5px',
-    border: '1px solid #ccc',
-    minWidth: '150px'
+    const handleStateSearch = () => {
+        // Trigger search when state search button is clicked
+        if (selectedCountry) {
+            // The useEffect will handle the actual fetching
+        }
     };
 
-    const searchBtnStyle = {
-    padding: '10px 15px',
-    backgroundColor: '#4f46e5',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer'
+    const handleNameSearch = () => {
+        // Filter businesses by name
+        console.log('Searching by name:', nameFilter);
     };
 
-    const cardGridStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px'
+    const handleProfileClick = (business) => {
+        navigate('/profile', { state: { business } });
     };
 
-    const cardStyle = {
-    background: '#fff',
-    borderRadius: '10px',
-    padding: '15px 20px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap'
+    const filteredBusinesses = businesses
+        .filter(business => 
+            business.BusinessName && 
+            business.BusinessName.trim() !== '' &&
+            business.BusinessName.toLowerCase().includes(nameFilter.toLowerCase())
+        );
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredBusinesses.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentBusinesses = filteredBusinesses.slice(startIndex, endIndex);
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedCountry, selectedState, nameFilter]);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        // Scroll to top of listings when page changes
+        document.querySelector('.listings-panel')?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const avatarStyle = {
-    width: '50px',
-    height: '50px',
-    backgroundColor: '#eee',
-    borderRadius: '50%'
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            handlePageChange(currentPage - 1);
+        }
     };
 
-    const detailBtnStyle = {
-    backgroundColor: '#e0e7ff',
-    border: 'none',
-    borderRadius: '5px',
-    padding: '8px 12px',
-    cursor: 'pointer',
-    fontWeight: 'bold'
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            handlePageChange(currentPage + 1);
+        }
+    };
+
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisiblePages = 5;
+        
+        if (totalPages <= maxVisiblePages) {
+            // Show all pages if total is less than max visible
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Show pages around current page
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            
+            // Adjust if we're near the beginning or end
+            if (currentPage <= 3) {
+                endPage = Math.min(totalPages, 5);
+            }
+            if (currentPage >= totalPages - 2) {
+                startPage = Math.max(1, totalPages - 4);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                pages.push(i);
+            }
+        }
+        
+        return pages;
     };
 
     return (
-    <div style={pageStyle}>
-        <h2>{pageTitle}</h2>
+        <div>
+            {/* Header */}
+            <header className="header">
+                <div className="logo-container">
+                    <img src={agricultureAssociationLogo} alt="Agriculture Association" className="logo-image" />
+                    <span className="logo-text">Agriculture Association</span>
+                </div>
+            </header>
 
-        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-        {loading && <p>Loading...</p>}
-
-        {/* FILTER BAR */}
-        <div style={filterBarStyle}>
-            <select style={selectStyle} value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setSelectedState(''); }}>
-            <option value="">Select Country</option>
-            {countries.map(country => (
-                <option key={country} value={country}>{country}</option>
-            ))}
-            </select>
-
-            {states.length > 0 && (
-            <select style={selectStyle} value={selectedState} onChange={(e) => setSelectedState(e.target.value)}>
-                <option value="">Select State</option>
-                {states.map(state => (
-                <option key={state} value={state}>{state}</option>
-                ))}
-            </select>
-            )}
-
-            <button style={searchBtnStyle}>Search</button>
-        </div>
-
-        {/* RESULT SECTION */}
-        <h3>Businesses</h3>
-        <div style={cardGridStyle}>
-            {businesses.length > 0 ? (
-            businesses.map((biz, index) => (
-                <div key={index} style={cardStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={avatarStyle}></div>
-                    <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{biz.BusinessName}</div>
-                    <div style={{ fontSize: '14px', color: '#555' }}>
-                        {biz.Address}, {biz.City}, {biz.State}, {biz.ZipCode}
+            {/* Main Content */}
+            <div className="content-wrapper">
+                {/* Search Panel */}
+                <div className="search-panel">
+                    <h2 className="search-title">Search</h2>
+                    
+                    <div className="search-group">
+                        <label className="search-label">Country</label>
+                        <select 
+                            className="search-select" 
+                            value={selectedCountry} 
+                            onChange={(e) => { setSelectedCountry(e.target.value); setSelectedState(''); }}
+                        >
+                            <option value="">Select Country</option>
+                            {countries.map(country => (
+                                <option key={country} value={country}>{country}</option>
+                            ))}
+                        </select>
+                        <button className="search-button" onClick={handleCountrySearch}>Search</button>
                     </div>
-                    {biz.Phone && <div style={{ fontSize: '14px', marginTop: '5px' }}>📞 {biz.Phone}</div>}
+
+                    <div className="search-group">
+                        <label className="search-label">State</label>
+                        <select 
+                            className="search-select" 
+                            value={selectedState} 
+                            onChange={(e) => setSelectedState(e.target.value)}
+                            disabled={states.length === 0}
+                        >
+                            <option value="">Any</option>
+                            {states.map(state => (
+                                <option key={state} value={state}>{state}</option>
+                            ))}
+                        </select>
+                        <button className="search-button" onClick={handleStateSearch}>Search</button>
+                    </div>
+
+                    <div className="search-group">
+                        <label className="search-label">Name</label>
+                        <input 
+                            type="text" 
+                            className="search-input" 
+                            value={nameFilter}
+                            onChange={(e) => setNameFilter(e.target.value)}
+                            placeholder="Enter business name"
+                        />
+                        <button className="search-button" onClick={handleNameSearch}>Search</button>
                     </div>
                 </div>
-                <button style={detailBtnStyle}>Detail</button>
+
+                {/* Listings Panel */}
+                <div className="listings-panel">
+                    {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+                    {loading && <p>Loading...</p>}
+                    
+                    {/* Results Summary */}
+                    {filteredBusinesses.length > 0 && !loading && (
+                        <div className="results-summary">
+                            <p>Showing {startIndex + 1}-{Math.min(endIndex, filteredBusinesses.length)} of {filteredBusinesses.length} businesses</p>
+                        </div>
+                    )}
+                    
+                    {/* Top Pagination Controls */}
+                    {currentBusinesses.length > 0 && totalPages > 1 && (
+                        <div className="pagination-container pagination-top">
+                            <div className="pagination-controls">
+                                <button 
+                                    className={`pagination-button ${currentPage === 1 ? 'disabled' : ''}`}
+                                    onClick={handlePreviousPage}
+                                    disabled={currentPage === 1}
+                                >
+                                    Previous
+                                </button>
+                                
+                                <div className="pagination-numbers">
+                                    {getPageNumbers().map(pageNum => (
+                                        <button
+                                            key={pageNum}
+                                            className={`pagination-number ${currentPage === pageNum ? 'active' : ''}`}
+                                            onClick={() => handlePageChange(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                <button 
+                                    className={`pagination-button ${currentPage === totalPages ? 'disabled' : ''}`}
+                                    onClick={handleNextPage}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                            
+                            <div className="pagination-info">
+                                Page {currentPage} of {totalPages}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {currentBusinesses.length > 0 ? (
+                        <>
+                            {currentBusinesses.map((business, index) => (
+                                <div key={startIndex + index} className="business-card">
+                                    <div className="business-header">
+                                        {business.BusinessName}
+                                    </div>
+                                    <div className="business-content">
+                                        <div className="business-card-layout">
+                                            {/* Profile Image Section */}
+                                            <div className="business-image-section">
+                                                {business.ProfileImage ? (
+                                                    <img src={business.ProfileImage} alt={`${business.BusinessName} Profile`} className="business-profile-image" />
+                                                ) : (
+                                                    <img src={photoNotAvailable} alt="Photo Not Available" className="business-profile-image" />
+                                                )}
+                                            </div>
+                                            
+                                            {/* Business Info Section */}
+                                            <div className="business-info-section">
+                                                <div className="business-location">
+                                                    {[business.City, business.State, business.Country].filter(Boolean).join(', ')}
+                                                </div>
+                                                
+                                                {/* Business Description */}
+                                                {(business.Description || business.About || business.Summary || business.Services || business.Details) && (
+                                                    <div className="business-description">
+                                                        {business.Description || business.About || business.Summary || business.Services || business.Details}
+                                                    </div>
+                                                )}
+                                                
+                                                {business.Website && (
+                                                    <a href={business.Website} className="business-website" target="_blank" rel="noopener noreferrer">
+                                                        {business.Website}
+                                                    </a>
+                                                )}
+                                                
+                                                <div className="contact-section">
+                                                    <a href="#" className="business-contact">Contact</a>
+                                                </div>
+                                                
+                                                <div className="business-actions">
+                                                    <div className="social-icons">
+                                                        {business.Facebook ? (
+                                                            <a 
+                                                                href={business.Facebook.startsWith('http') ? business.Facebook : `https://facebook.com/${business.Facebook}`} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer" 
+                                                                className="social-icon facebook-icon"
+                                                            >
+                                                                f
+                                                            </a>
+                                                        ) : (
+                                                            <div className="social-icon facebook-icon">f</div>
+                                                        )}
+                                                        
+                                                        {business.Pinterest ? (
+                                                            <a 
+                                                                href={business.Pinterest.startsWith('http') ? business.Pinterest : `https://pinterest.com/${business.Pinterest}`} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer" 
+                                                                className="social-icon pinterest-icon"
+                                                            >
+                                                                P
+                                                            </a>
+                                                        ) : (
+                                                            <div className="social-icon pinterest-icon">P</div>
+                                                        )}
+                                                    </div>
+                                                    <button 
+                                                        className="profile-button" 
+                                                        onClick={() => handleProfileClick(business)}
+                                                    >
+                                                        Profile
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        !loading && selectedCountry && <p>No businesses found for the selected filters.</p>
+                    )}
+                    
+                    {!selectedCountry && !loading && (
+                        <p>Please select a country to view businesses.</p>
+                    )}
                 </div>
-            ))
-            ) : (
-            !loading && <p>No businesses found for the selected filters.</p>
-            )}
+            </div>
         </div>
-    </div>
     );
 };
 
