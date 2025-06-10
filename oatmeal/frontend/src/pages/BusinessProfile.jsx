@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../config';
 import agriAssociaLogo from '../images/agri_associa.png';
 import agricultureAssociationLogo from '../images/Agriculture Association.jpeg';
 import photoNotAvailable from '../images/photo not available .jpg';
@@ -7,7 +8,41 @@ import photoNotAvailable from '../images/photo not available .jpg';
 const BusinessProfile = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const business = location.state?.business;
+    const initialBusiness = location.state?.business;
+    const [business, setBusiness] = useState(initialBusiness);
+
+    useEffect(() => {
+        const fetchBusinessDetails = async () => {
+            if (!initialBusiness?.BusinessName) return;
+
+            try {
+                const response = await fetch(API_ENDPOINTS.BUSINESS_DETAILS, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        businessNames: [initialBusiness.BusinessName]
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch business details: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    const enriched = data[0];
+                    setBusiness({ ...initialBusiness, ...enriched }); // Merge enriched data
+                }
+            } catch (error) {
+                console.error('Error fetching enriched business data:', error);
+            }
+        };
+
+    fetchBusinessDetails();
+    }, [initialBusiness]);
+
 
     // Contact form state
     const [formData, setFormData] = useState({

@@ -62,3 +62,37 @@ def get_businesses(request):
         cursor.execute(query, params)
         businesses = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
     return Response(businesses)
+
+@api_view(['POST'])
+def get_business_details(request):
+    business_names = [
+        name.strip() for name in request.data.get('businessNames', []) 
+        if isinstance(name, str) and name.strip()
+    ]
+    
+    if not business_names or not isinstance(business_names, list):
+        return Response(
+            {"error": "businessNames must be provided as a list."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    placeholders = ','.join(['%s'] * len(business_names))
+    query = f"""
+        SELECT 
+            BusinessName,
+            Logo AS ProfileImage,
+            BusinessFacebook AS Facebook,
+            BusinessPinterest AS Pinterest,
+            BusinessX AS Twitter,
+            BusinessInstagram AS Instagram
+        FROM BusinessDetails
+        WHERE BusinessName IN ({placeholders})
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, business_names)
+        columns = [col[0] for col in cursor.description]
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    return Response(results)
+

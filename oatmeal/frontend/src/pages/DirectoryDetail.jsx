@@ -7,7 +7,7 @@ import photoNotAvailable from '../images/photo not available .jpg';
 
 // Mapping from URL slug to the BusinessType expected by the backend
 const DIRECTORY_TYPE_TO_BUSINESS_TYPE = {
-  'agricultural-associations': 'Agricultural Association',
+  'agricultural-associations': '1',
   'artisan-producers': 'Artisan Food Producer',
   'business-resources': 'Business Resources',
   'crafter-organizations': 'Crafters Organization',
@@ -50,8 +50,8 @@ const DirectoryDetail = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // const businessType = DIRECTORY_TYPE_TO_BUSINESS_TYPE[directoryType] || directoryType;
-    const businessType = '8';
+    const businessType = DIRECTORY_TYPE_TO_BUSINESS_TYPE[directoryType] || directoryType;
+    //const businessType = '1';
     const pageTitle = directoryType.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
     // Fetch countries
@@ -114,8 +114,47 @@ const DirectoryDetail = () => {
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Failed to fetch businesses: ${response.statusText} (status: ${response.status})`);
-                const data = await response.json();
-                setBusinesses(data || []);
+                const baseBusinesses = await response.json();
+                const cleanedNames = baseBusinesses
+                .map(b => b.BusinessName?.trim())
+                .filter(name => name && name !== '');
+
+                if (baseBusinesses.length === 0) {
+                    setBusinesses([]);
+                    return;
+                }
+
+                // Fetch enriched details
+                try {
+                    const enrichedResponse = await fetch(API_ENDPOINTS.BUSINESS_DETAILS, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            businessNames: cleanedNames,
+                        }),
+                    });
+
+                    const enrichedData = await enrichedResponse.json();
+
+                    //Merge enriched info into base businesses
+                    const enrichedMap = {};
+                    for (const item of enrichedData) {
+                        enrichedMap[item.BusinessName] = item;
+                    }
+
+                    const combinedBusinesses = baseBusinesses.map(b => ({
+                        ...b,
+                        ...enrichedMap[b.BusinessName]
+                    }));
+
+                    setBusinesses(combinedBusinesses);
+                } catch (err) {
+                    console.error('Failed to fetch enriched business details:', err);
+                    setBusinesses(baseBusinesses); // fallback to base info
+                }
+
             } catch (err) {
                 console.error(err);
                 setError(err.message);
