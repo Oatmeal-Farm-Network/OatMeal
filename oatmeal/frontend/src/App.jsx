@@ -8,7 +8,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/directory/agricultural-associations" replace />} />
+        <Route path="/" element={<Navigate to="/directory/fiber-mills" replace />} />
         <Route path="/directory/:directoryType" element={<DirectoryDetail />} />
         <Route path="/profile" element={<BusinessProfile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
