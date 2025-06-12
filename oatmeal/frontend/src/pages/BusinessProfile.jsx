@@ -12,36 +12,60 @@ const BusinessProfile = () => {
     const [business, setBusiness] = useState(initialBusiness);
 
     useEffect(() => {
-        const fetchBusinessDetails = async () => {
-            if (!initialBusiness?.BusinessName) return;
+    const fetchBusinessDetails = async () => {
+        if (!initialBusiness?.BusinessName) return;
 
-            try {
-                const response = await fetch(API_ENDPOINTS.BUSINESS_DETAILS, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        businessNames: [initialBusiness.BusinessName]
-                    }),
-                });
+        try {
+            // Step 1: Fetch full details
+            const response = await fetch(API_ENDPOINTS.BUSINESS_DETAILS, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    businessNames: [initialBusiness.BusinessName]
+                }),
+            });
 
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch business details: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    const enriched = data[0];
-                    setBusiness({ ...initialBusiness, ...enriched }); // Merge enriched data
-                }
-            } catch (error) {
-                console.error('Error fetching enriched business data:', error);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch business details: ${response.statusText}`);
             }
-        };
+
+            const baseData = await response.json();
+            const fullDetails = baseData[0] || {};
+
+            // Step 2: Fetch enrichment data
+            const enrichedResponse = await fetch(API_ENDPOINTS.BUSINESS_ENRICHMENT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    businessNames: [initialBusiness.BusinessName],
+                }),
+            });
+
+            let enrichment = {};
+            if (enrichedResponse.ok) {
+                const enrichedData = await enrichedResponse.json();
+                enrichment = enrichedData[0] || {};
+            }
+
+            // Step 3: Merge everything and update state
+            setBusiness({
+                ...initialBusiness,
+                ...fullDetails,
+                ...enrichment
+            });
+
+        } catch (error) {
+            console.error('Error fetching enriched business data:', error);
+        }
+    };
 
     fetchBusinessDetails();
-    }, [initialBusiness]);
+}, [initialBusiness]);
+
 
 
     // Contact form state
@@ -318,6 +342,18 @@ const BusinessProfile = () => {
                                     <p>{[business.Address, business.City, business.State, business.ZipCode, business.Country].filter(Boolean).join(', ')}</p>
                                 </div>
                             </div>
+                            {/* Business Description */}
+                            <div className="profile-section">
+                                <h2>Description</h2>
+                                <h3>{business.Heading}</h3>
+                                {(business.Description || business.About || business.Summary || business.Services || business.Details) && (
+                                <div className="business-description">
+                                    {business.Description || business.About || business.Summary || business.Services || business.Details}
+                                </div>
+                               )}
+                               {business.Description2}
+                            </div>
+                            
                         </div>
                     </div>
 

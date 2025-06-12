@@ -93,6 +93,37 @@ def get_business_details(request):
         cursor.execute(query, business_names)
         columns = [col[0] for col in cursor.description]
         results = [dict(zip(columns, row)) for row in cursor.fetchall()]
-
+    MEDIA_URL_BASE = 'http://www.oatmealfarmnetwork.com/'
+    for result in results:
+        path = result.get("ProfileImage")
+        if path and not path.startswith("http"):
+            result["ProfileImage"] = f"{MEDIA_URL_BASE}{path}"
     return Response(results)
 
+@api_view(['POST'])
+def get_business_logos_and_description(request):
+    business_names = [
+        name.strip() for name in request.data.get('businessNames', []) 
+        if isinstance(name, str) and name.strip()
+    ]
+
+    if not business_names:
+        return Response({"error": "No valid business names provided."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    placeholders = ','.join(['%s'] * len(business_names))
+    query = f"""
+        SELECT 
+            BusinessName,
+            RanchHomeHeading AS Heading,
+            RanchHomeText AS Description,
+            RanchHomeText2 AS Description2,
+            BusinessWebsiteID AS Website
+        FROM BusinessView2
+        WHERE BusinessName IN ({placeholders})
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, business_names)
+        columns = [col[0] for col in cursor.description]
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return Response(results)

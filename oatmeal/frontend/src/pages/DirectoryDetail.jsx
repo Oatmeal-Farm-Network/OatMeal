@@ -107,60 +107,83 @@ const DirectoryDetail = () => {
         const fetchBusinesses = async () => {
             setLoading(true);
             setError(null);
+
             let url = `${API_ENDPOINTS.BUSINESSES}?country=${encodeURIComponent(selectedCountry)}&BusinessType=${encodeURIComponent(businessType)}`;
             if (selectedState) {
                 url += `&state=${encodeURIComponent(selectedState)}`;
             }
+
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Failed to fetch businesses: ${response.statusText} (status: ${response.status})`);
-                const baseBusinesses = await response.json();
+                const baseResponse = await fetch(url);
+                if (!baseResponse.ok) throw new Error(`Failed to fetch businesses: ${baseResponse.statusText}`);
+                const baseBusinesses = await baseResponse.json();
+
+                if (!baseBusinesses || baseBusinesses.length === 0) {
+                setBusinesses([]);
+                setLoading(false);
+                return;
+                }
+
                 const cleanedNames = baseBusinesses
                 .map(b => b.BusinessName?.trim())
                 .filter(name => name && name !== '');
 
-                if (baseBusinesses.length === 0) {
-                    setBusinesses([]);
-                    return;
+                const detailsMap = {};
+                const enrichmentMap = {};
+
+                //Fetch both APIs in parallel
+                const [detailsResponse, enrichmentResponse] = await Promise.all([
+                fetch(API_ENDPOINTS.BUSINESS_DETAILS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ businessNames: cleanedNames }),
+                }),
+                fetch(API_ENDPOINTS.BUSINESS_ENRICHMENT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ businessNames: cleanedNames }),
+                })
+                ]);
+
+                // Parse and build maps
+                if (detailsResponse.ok) {
+                const detailsData = await detailsResponse.json();
+                detailsData.forEach(item => {
+                    detailsMap[item.BusinessName] = item;
+                });
                 }
 
-                // Fetch enriched details
-                try {
-                    const enrichedResponse = await fetch(API_ENDPOINTS.BUSINESS_DETAILS, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            businessNames: cleanedNames,
-                        }),
+                if (enrichmentResponse.ok) {
+                    console.log('Enrichment response:', enrichmentResponse);
+                    const enrichmentData = await enrichmentResponse.json();
+                    enrichmentData.forEach(entry => {
+                        enrichmentMap[entry.BusinessName] = {
+                            Heading: entry.Heading,
+                            Description: entry.Description,
+                            Description2: entry.Description2,
+                            Website: entry.Website
+                        };
                     });
-
-                    const enrichedData = await enrichedResponse.json();
-
-                    //Merge enriched info into base businesses
-                    const enrichedMap = {};
-                    for (const item of enrichedData) {
-                        enrichedMap[item.BusinessName] = item;
-                    }
-
-                    const combinedBusinesses = baseBusinesses.map(b => ({
-                        ...b,
-                        ...enrichedMap[b.BusinessName]
-                    }));
-
-                    setBusinesses(combinedBusinesses);
-                } catch (err) {
-                    console.error('Failed to fetch enriched business details:', err);
-                    setBusinesses(baseBusinesses); // fallback to base info
                 }
 
+                // Merge everything
+                const combinedBusinesses = baseBusinesses.map(b => ({
+                ...b,
+                ...detailsMap[b.BusinessName],
+                ...enrichmentMap[b.BusinessName]
+                }));
+
+                setBusinesses(combinedBusinesses);
             } catch (err) {
-                console.error(err);
+                console.error("Fetch failed:", err);
                 setError(err.message);
             }
+
             setLoading(false);
         };
+
+
+
         fetchBusinesses();
     }, [selectedCountry, selectedState, businessType]);
 
@@ -389,12 +412,6 @@ const DirectoryDetail = () => {
                                                     {[business.City, business.State, business.Country].filter(Boolean).join(', ')}
                                                 </div>
                                                 
-                                                {/* Business Description */}
-                                                {(business.Description || business.About || business.Summary || business.Services || business.Details) && (
-                                                    <div className="business-description">
-                                                        {business.Description || business.About || business.Summary || business.Services || business.Details}
-                                                    </div>
-                                                )}
                                                 
                                                 {business.Website && (
                                                     <a href={business.Website} className="business-website" target="_blank" rel="noopener noreferrer">
