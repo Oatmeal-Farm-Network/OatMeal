@@ -270,11 +270,14 @@ body {
 }
 
 .business-profile-image {
-  width: 80px;
-  height: 80px;
+  width: 160px;
+  height: 160px;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
   border: 2px solid #d2691e;
+  background: #fffbe7;
+  display: block;
+  margin: 0 auto;
 }
 
 .business-image-placeholder {
@@ -304,6 +307,14 @@ body {
   font-size: 14px;
   color: #666;
   margin-bottom: 8px;
+}
+
+.business-full-location {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  font-style: italic;
 }
 
 .business-description {
@@ -346,12 +357,15 @@ body {
   background-color: #d2691e;
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 2px 8px;
+  border-radius: 3px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  transition: background-color 0.3s;
+  font-size: 11px;
+  margin-top: 0;
+  min-width: 40px;
+  min-height: 20px;
+  line-height: 1.1;
+  box-shadow: none;
 }
 
 .profile-button-small:hover {
@@ -418,10 +432,18 @@ body {
   background-color: #d2691e;
   color: white;
   border: none;
-  padding: 8px 20px;
+  padding: 6px 16px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
+  margin-top: 0;
+  min-width: 60px;
+  max-width: 120px;
+  min-height: 28px;
+  line-height: 1.2;
+  font-weight: 500;
+  display: inline-block;
+  width: auto;
 }
 
 .profile-button:hover {
@@ -676,9 +698,12 @@ a:hover {
   width: 250px;
   height: 250px;
   border-radius: 12px;
-  object-fit: cover;
+  object-fit: contain;
   border: 3px solid #d2691e;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background: #fffbe7;
+  display: block;
+  margin: 0 auto;
 }
 
 .profile-image-placeholder {
@@ -795,7 +820,7 @@ a:hover {
 
 .social-section {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 20px;
 }
 

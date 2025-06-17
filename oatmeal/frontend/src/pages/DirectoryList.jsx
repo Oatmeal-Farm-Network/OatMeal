@@ -111,7 +111,6 @@ const DirectoryList = () => {
                         <div>
                             <img src={dir.imgSrc} alt={dir.title} style={imgStyle} />
                             <h3>{dir.title}</h3>
-                            <p>{dir.desc}</p>
                         </div>
                         <Link to={`/directory/${dir.slug}`} style={buttonStyle}>
                             Explore

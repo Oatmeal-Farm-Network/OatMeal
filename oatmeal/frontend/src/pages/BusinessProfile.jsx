@@ -4,11 +4,18 @@ import { API_ENDPOINTS } from '../config';
 import agriAssociaLogo from '../images/agri_associa.png';
 import agricultureAssociationLogo from '../images/Agriculture Association.jpeg';
 import photoNotAvailable from '../images/photo not available .jpg';
+import { DIRECTORY_TYPE_TO_IMAGE, DIRECTORY_TYPE_TO_BUSINESS_TYPE } from './directoryMappings';
+import { FaFacebookF, FaPinterestP, FaXTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaGlobe } from 'react-icons/fa6';
+
 
 const BusinessProfile = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const initialBusiness = location.state?.business;
+    const directoryType = location.state?.directoryType;
+    const selectedCountry = location.state?.selectedCountry;
+    const selectedState = location.state?.selectedState;
+    const nameFilter = location.state?.nameFilter;
     const [business, setBusiness] = useState(initialBusiness);
 
     useEffect(() => {
@@ -149,13 +156,24 @@ const BusinessProfile = () => {
             <div>
                 <header className="header">
                     <div className="logo-container">
-                        <img src={agricultureAssociationLogo} alt="Agricultural Association" className="logo-image" />
-                        <span className="logo-text">Agriculture Association</span>
+                        <img src={DIRECTORY_TYPE_TO_IMAGE[directoryType] || photoNotAvailable} className="logo-image" />
+                        <span className="logo-text">{DIRECTORY_TYPE_TO_BUSINESS_TYPE[directoryType] || 'Business'}</span>
                     </div>
                 </header>
                 <div className="profile-page-container">
                     <p>No business information available.</p>
-                    <button onClick={() => navigate(-1)} className="back-button">Go Back</button>
+                    <button 
+                        onClick={() => navigate(`/directory/${directoryType || 'agricultural-associations'}`, {
+                            state: {
+                                selectedCountry,
+                                selectedState,
+                                nameFilter
+                            }
+                        })} 
+                        className="back-button"
+                    >
+                        ← Back to Listings
+                    </button>
                 </div>
             </div>
         );
@@ -166,15 +184,26 @@ const BusinessProfile = () => {
             {/* Header */}
             <header className="header">
                 <div className="logo-container">
-                    <img src={agricultureAssociationLogo} alt="Agricultural Association" className="logo-image" />
-                    <span className="logo-text">Agriculture Association</span>
+                    <img src={DIRECTORY_TYPE_TO_IMAGE[directoryType] || photoNotAvailable} className="logo-image" />
+                    <span className="logo-text">{DIRECTORY_TYPE_TO_BUSINESS_TYPE[directoryType] || 'Business'}</span>
                 </div>
             </header>
 
             {/* Profile Page Content */}
             <div className="profile-page-container">
                 <div className="profile-page-header">
-                    <button onClick={() => navigate(-1)} className="back-button">← Back to Listings</button>
+                    <button 
+                        onClick={() => navigate(`/directory/${directoryType || 'agricultural-associations'}`, {
+                            state: {
+                                selectedCountry,
+                                selectedState,
+                                nameFilter
+                            }
+                        })} 
+                        className="back-button"
+                    >
+                        ← Back to Listings
+                    </button>
                     <h1 className="profile-business-name">{business.BusinessName}</h1>
                 </div>
 
@@ -189,106 +218,47 @@ const BusinessProfile = () => {
                                 ) : (
                                     <img src={photoNotAvailable} alt="Photo Not Available" className="profile-image-large" />
                                 )}
-                            </div>
-                            
-                            <div className="profile-contact-section">
-                                {(business.Phone || business.Website) && (
-                                    <div className="profile-section">
-                                        <h2>Contact Information</h2>
-                                        <div className="contact-info">
-                                            {business.Phone && (
-                                                <div className="contact-item">
-                                                    <strong>Phone:</strong>
-                                                    <a href={`tel:${business.Phone}`} className="contact-link">{business.Phone}</a>
-                                                </div>
-                                            )}
-                                            {business.Website && (
-                                                <div className="contact-item">
-                                                    <strong>Website:</strong>
-                                                    <a href={business.Website} target="_blank" rel="noopener noreferrer" className="contact-link">
-                                                        {business.Website}
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="profile-section">
-                                    <h2>Connect With Us</h2>
-                                    <div className="social-section">
-                                        <div className="social-icons-large">
-                                            {business.Facebook ? (
-                                                <a 
-                                                    href={business.Facebook.startsWith('http') ? business.Facebook : `https://facebook.com/${business.Facebook}`} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer" 
-                                                    className="social-icon-large facebook-icon"
-                                                >
-                                                    <span>f</span>
-                                                    <span>Facebook</span>
+                                <div className="profile-section" style={{ marginTop: '20px', textAlign: 'left' }}>
+                                    <h2>Contact Information</h2>
+                                    <div className="contact-info">
+                                        {business.Phone && (
+                                            <div className="contact-item">
+                                                <strong>Phone:</strong>
+                                                <a href={`tel:${business.Phone}`} className="contact-link">{business.Phone}</a>
+                                            </div>
+                                        )}
+                                        {business.Website && (
+                                            <div className="contact-item">
+                                                <strong>Website:</strong>
+                                                <a href={business.Website} target="_blank" rel="noopener noreferrer" className="contact-link">
+                                                    {business.Website}
                                                 </a>
-                                            ) : (
-                                                <div className="social-icon-large facebook-icon">
-                                                    <span>f</span>
-                                                    <span>Facebook</span>
-                                                </div>
-                                            )}
-                                            
-                                            {business.Pinterest ? (
-                                                <a 
-                                                    href={business.Pinterest.startsWith('http') ? business.Pinterest : `https://pinterest.com/${business.Pinterest}`} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer" 
-                                                    className="social-icon-large pinterest-icon"
-                                                >
-                                                    <span>P</span>
-                                                    <span>Pinterest</span>
-                                                </a>
-                                            ) : (
-                                                <div className="social-icon-large pinterest-icon">
-                                                    <span>P</span>
-                                                    <span>Pinterest</span>
-                                                </div>
-                                            )}
-                                            
-                                            {business.Twitter ? (
-                                                <a 
-                                                    href={business.Twitter.startsWith('http') ? business.Twitter : `https://twitter.com/${business.Twitter}`} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer" 
-                                                    className="social-icon-large twitter-icon"
-                                                >
-                                                    <span>𝕏</span>
-                                                    <span>Twitter</span>
-                                                </a>
-                                            ) : (
-                                                <div className="social-icon-large twitter-icon">
-                                                    <span>𝕏</span>
-                                                    <span>Twitter</span>
-                                                </div>
-                                            )}
-                                            
-                                            {business.Instagram ? (
-                                                <a 
-                                                    href={business.Instagram.startsWith('http') ? business.Instagram : `https://instagram.com/${business.Instagram}`} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer" 
-                                                    className="social-icon-large instagram-icon"
-                                                >
-                                                    <span>📷</span>
-                                                    <span>Instagram</span>
-                                                </a>
-                                            ) : (
-                                                <div className="social-icon-large instagram-icon">
-                                                    <span>📷</span>
-                                                    <span>Instagram</span>
-                                                </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
+                                        {/* Location Information */}
+                                        {(business.Address || business.City || business.State || business.ZipCode || business.Country) && (
+                                            <div className="contact-item">
+                                                <strong>Location:</strong>
+                                                <span className="contact-link">
+                                                    {[business.Address, business.City, business.State, business.ZipCode, business.Country].filter(Boolean).join(', ')}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
+                            {/* Description Blog on the right side of the profile image */}
+                            {business.Description && (
+                                <div style={{ marginLeft: '30px', flex: 1, textAlign: 'left', background: 'none', boxShadow: 'none', padding: 0 }}>
+                                    <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '10px' }}>{business.BusinessName}</div>
+                                    {business.Heading && (
+                                        <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '10px' }}>{business.Heading}</div>
+                                    )}
+                                    <div style={{ fontSize: '15px', color: '#222', whiteSpace: 'pre-line', lineHeight: 1.7 }}>
+                                        {business.Description}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="profile-main-info">
@@ -336,24 +306,41 @@ const BusinessProfile = () => {
                                 </div>
                             </div>
 
-                            <div className="profile-section">
-                                <h2>Location</h2>
-                                <div className="location-info">
-                                    <p>{[business.Address, business.City, business.State, business.ZipCode, business.Country].filter(Boolean).join(', ')}</p>
+                            {/* Only show the entire social media section if at least one social link exists */}
+                            {((business.Facebook && business.Facebook.trim()) || 
+                              (business.Pinterest && business.Pinterest.trim()) || 
+                              (business.Twitter && business.Twitter.trim()) || 
+                              (business.Instagram && business.Instagram.trim()) || 
+                              (business.LinkedIn && business.LinkedIn.trim()) || 
+                              (business.YouTube && business.YouTube.trim()) || 
+                              (business.Website && business.Website.trim())) && (
+                                <div className="profile-section" style={{ marginTop: '20px', textAlign: 'left' }}>
+                                    <h2>Connect With Us</h2>
+                                    <div className="social-section" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        {business.Facebook && business.Facebook.trim() && (
+                                            <a href={business.Facebook.startsWith('http') ? business.Facebook : `https://facebook.com/${business.Facebook}`} target="_blank" rel="noopener noreferrer" className="social-icon-large facebook-icon" title="Facebook"><FaFacebookF /></a>
+                                        )}
+                                        {business.Pinterest && business.Pinterest.trim() && (
+                                            <a href={business.Pinterest.startsWith('http') ? business.Pinterest : `https://pinterest.com/${business.Pinterest}`} target="_blank" rel="noopener noreferrer" className="social-icon-large pinterest-icon" title="Pinterest"><FaPinterestP /></a>
+                                        )}
+                                        {business.Twitter && business.Twitter.trim() && (
+                                            <a href={business.Twitter.startsWith('http') ? business.Twitter : `https://twitter.com/${business.Twitter}`} target="_blank" rel="noopener noreferrer" className="social-icon-large twitter-icon" title="X"><FaXTwitter /></a>
+                                        )}
+                                        {business.Instagram && business.Instagram.trim() && (
+                                            <a href={business.Instagram.startsWith('http') ? business.Instagram : `https://instagram.com/${business.Instagram}`} target="_blank" rel="noopener noreferrer" className="social-icon-large instagram-icon" title="Instagram"><FaInstagram /></a>
+                                        )}
+                                        {business.LinkedIn && business.LinkedIn.trim() && (
+                                            <a href={business.LinkedIn.startsWith('http') ? business.LinkedIn : `https://linkedin.com/in/${business.LinkedIn}`} target="_blank" rel="noopener noreferrer" className="social-icon-large linkedin-icon" title="LinkedIn"><FaLinkedinIn /></a>
+                                        )}
+                                        {business.YouTube && business.YouTube.trim() && (
+                                            <a href={business.YouTube.startsWith('http') ? business.YouTube : `https://youtube.com/${business.YouTube}`} target="_blank" rel="noopener noreferrer" className="social-icon-large youtube-icon" title="YouTube"><FaYoutube /></a>
+                                        )}
+                                        {business.Website && business.Website.trim() && (
+                                            <a href={business.Website} target="_blank" rel="noopener noreferrer" className="social-icon-large" title="Website"><FaGlobe /></a>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                            {/* Business Description */}
-                            <div className="profile-section">
-                                <h2>Description</h2>
-                                <h3>{business.Heading}</h3>
-                                {(business.Description || business.About || business.Summary || business.Services || business.Details) && (
-                                <div className="business-description">
-                                    {business.Description || business.About || business.Summary || business.Services || business.Details}
-                                </div>
-                               )}
-                               {business.Description2}
-                            </div>
-                            
+                            )}
                         </div>
                     </div>
 

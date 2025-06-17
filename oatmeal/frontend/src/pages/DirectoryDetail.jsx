@@ -1,31 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { API_ENDPOINTS } from '../config'; // We'll create this config file next
-import agriAssociaLogo from '../images/agri_associa.png';
-import artisianImg from '../images/artisian.jpg';
-import brImg from '../images/br.jpg';
-import crafOrgImg from '../images/craf_org.jpg';
-import farmersMarketImg from '../images/farmers_market.jpg';
-import farmsRanchesImg from '../images/farms_ranches.jpg';
-import fiberImg from '../images/fiber.jpg'; // Assuming fiber.jpg is the correct name for Fiber Cooperatives
-import fiberMillsImg from '../images/fiber_mills.jpg';
-import fisheriesImg from '../images/fisheries.jpeg';
-import fishermenImg from '../images/fishermen.jpeg';
-import foodCopImg from '../images/food_cop.jpg';
-import foodHubImg from '../images/food_hub.jpg';
-import groceryStoreImg from '../images/grocery_store.jpeg';
-import manfacImg from '../images/manfac.jpeg'; // Assuming manfac.jpeg is for Manufacturers
-import marinasImg from '../images/marinas.jpeg';
-import meatImg from '../images/meat.jpg'; // Assuming meat.jpg is for Meat Wholesalers
-import realEstateImg from '../images/real_estate.webp';
-import restaurantsImg from '../images/restaurants.jpg';
-import retailersImg from '../images/retailers.png';
-import serviceProvidersImg from '../images/service_providers.webp';
-import universitiesImg from '../images/universities.jpeg';
-import vetImg from '../images/vet.webp';
-import vineyardsImg from '../images/vineyards.jpeg';
-import wineriesImg from '../images/wineries.png';
-import othersImg from '../images/others.jpg';
+import { DIRECTORY_TYPE_TO_IMAGE, DIRECTORY_TYPE_TO_BUSINESS_TYPE } from './directoryMappings';
 import photoNotAvailable from '../images/photo not available .jpg';
 
 // Mapping from URL slug to the BusinessType expected by the backend
@@ -59,79 +35,34 @@ const DIRECTORY_TYPE_TO_BUSINESS_TYPE_ID = {
   'others': '3' // Ensure 'Other' is a valid BusinessType in your backend or adjust as needed
 };
 
-const DIRECTORY_TYPE_TO_BUSINESS_TYPE = {
-    'agricultural-associations': 'Agricultural Association',
-    'artisan-producers': 'Artisan Producer',
-    'business-resources': 'Business Resource',      
-    'crafter-organizations': 'Crafter Organization',
-    'farmers-markets': 'Farmers Market',
-    'farms-ranches': 'Farm/Ranch',
-    'fiber-cooperatives': 'Fiber Cooperative',
-    'fiber-mills': 'Fiber Mill',
-    'fisheries': 'Fisheries',
-    'fishermen': 'Fishermen',   
-    'food-cooperatives': 'Food Cooperative',
-    'food-hubs': 'Food Hub',
-    'grocery-stores': 'Grocery Store',
-    'herb-and-tea-producer': 'Herb and Tea Producer',
-    'manufacturers': 'Manufacturer',
-    'marinas': 'Marina',
-    'meat-wholesalers': 'Meat Wholesaler',
-    'real-estate-agents': 'Real Estate Agent',
-    'restaurants': 'Restaurant',
-    'retailers': 'Retailer',
-    'service-providers': 'Service Provider',
-    'transporter': 'Transporter',
-    'universities': 'University',
-    'veterinarians': 'Veterinarian',
-    'vineyards': 'Vineyard',
-    'wineries': 'Winery',
-    'others': 'Other'
-};
-
-const DIRECTORY_TYPE_TO_IMAGE = {
-  'agricultural-associations': agriAssociaLogo,
-    'artisan-producers': artisianImg,  
-    'business-resources': brImg,
-    'crafter-organizations': crafOrgImg,
-    'farmers-markets': farmersMarketImg,
-    'farms-ranches': farmsRanchesImg,           
-    'fiber-cooperatives': fiberImg,
-    'fiber-mills': fiberMillsImg,
-    'fisheries': fisheriesImg,
-    'fishermen': fishermenImg,
-    'food-cooperatives': foodCopImg,
-    'food-hubs': foodHubImg,
-    'grocery-stores': groceryStoreImg,
-    'manufacturers': manfacImg,
-    'marinas': marinasImg,
-    'meat-wholesalers': meatImg,
-    'real-estate-agents': realEstateImg,
-    'restaurants': restaurantsImg,      
-    'retailers': retailersImg,
-    'service-providers': serviceProvidersImg,
-    'universities': universitiesImg,
-    'veterinarians': vetImg,
-    'vineyards': vineyardsImg,
-    'wineries': wineriesImg,
-    'others': othersImg
-};
-
 const DirectoryDetail = () => {
     const { directoryType } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Check if we have filter state from navigation back from profile
+    const backState = location.state;
+    
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
     const [businesses, setBusinesses] = useState([]);
-    const [selectedCountry, setSelectedCountry] = useState('');
-    const [selectedState, setSelectedState] = useState('');
-    const [nameFilter, setNameFilter] = useState('');
+    const [selectedCountry, setSelectedCountry] = useState(backState?.selectedCountry || '');
+    const [selectedState, setSelectedState] = useState(backState?.selectedState || '');
+    const [nameFilter, setNameFilter] = useState(backState?.nameFilter || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+
+    // Clear navigation state after restoring filters
+    useEffect(() => {
+        if (backState) {
+            // Clear the state to prevent it from persisting
+            window.history.replaceState({}, document.title);
+        }
+    }, [backState]);
 
     const businessType = DIRECTORY_TYPE_TO_BUSINESS_TYPE_ID[directoryType] || directoryType;
     //const businessType = '1';
@@ -290,7 +221,15 @@ const DirectoryDetail = () => {
     };
 
     const handleProfileClick = (business) => {
-        navigate('/profile', { state: { business } });
+        navigate('/profile', { 
+            state: { 
+                business, 
+                directoryType,
+                selectedCountry,
+                selectedState,
+                nameFilter
+            } 
+        });
     };
 
     const filteredBusinesses = businesses
@@ -365,8 +304,8 @@ const DirectoryDetail = () => {
             {/* Header */}
             <header className="header">
                 <div className="logo-container">
-                    <img src={DIRECTORY_TYPE_TO_IMAGE[directoryType]} className="logo-image" />
-                    <span className="logo-text">{DIRECTORY_TYPE_TO_BUSINESS_TYPE[directoryType]}</span>
+                    <img src={DIRECTORY_TYPE_TO_IMAGE[directoryType] || photoNotAvailable} className="logo-image" />
+                    <span className="logo-text">{DIRECTORY_TYPE_TO_BUSINESS_TYPE[directoryType] || 'Business'}</span>
                 </div>
             </header>
 
@@ -392,7 +331,7 @@ const DirectoryDetail = () => {
                     </div>
 
                     <div className="search-group">
-                        <label className="search-label">State</label>
+                        <label className="search-label">State/Province</label>
                         <select 
                             className="search-select" 
                             value={selectedState} 
@@ -428,7 +367,7 @@ const DirectoryDetail = () => {
                     {/* Results Summary */}
                     {filteredBusinesses.length > 0 && !loading && (
                         <div className="results-summary">
-                            <p>Showing {startIndex + 1}-{Math.min(endIndex, filteredBusinesses.length)} of {filteredBusinesses.length} businesses</p>
+                            <p>Showing {startIndex + 1}-{Math.min(endIndex, filteredBusinesses.length)} of {filteredBusinesses.length}</p>
                         </div>
                     )}
                     
@@ -483,7 +422,12 @@ const DirectoryDetail = () => {
                                             {/* Profile Image Section */}
                                             <div className="business-image-section">
                                                 {business.ProfileImage ? (
-                                                    <img src={business.ProfileImage} alt={`${business.BusinessName} Profile`} className="business-profile-image" />
+                                                    <img
+                                                        src={business.ProfileImage}
+                                                        alt={`${business.BusinessName} Profile`}
+                                                        className="business-profile-image"
+                                                        onError={e => { e.target.onerror = null; e.target.src = photoNotAvailable; }}
+                                                    />
                                                 ) : (
                                                     <img src={photoNotAvailable} alt="Photo Not Available" className="business-profile-image" />
                                                 )}
@@ -492,9 +436,15 @@ const DirectoryDetail = () => {
                                             {/* Business Info Section */}
                                             <div className="business-info-section">
                                                 <div className="business-location">
-                                                    {[business.City, business.State, business.Country].filter(Boolean).join(', ')}
+                                                    {[business.State, business.Country].filter(Boolean).join(', ')}
                                                 </div>
                                                 
+                                                {/* Detailed Location Information */}
+                                                {(business.Address || business.City || business.ZipCode) && (
+                                                    <div className="business-full-location">
+                                                        {[business.Address, business.City, business.State, business.ZipCode, business.Country].filter(Boolean).join(', ')}
+                                                    </div>
+                                                )}
                                                 
                                                 {business.Website && (
                                                     <a href={business.Website} className="business-website" target="_blank" rel="noopener noreferrer">
@@ -502,13 +452,13 @@ const DirectoryDetail = () => {
                                                     </a>
                                                 )}
                                                 
-                                                <div className="contact-section">
-                                                    <a href="#" className="business-contact">Contact</a>
-                                                </div>
+                                                <a href="#" className="business-contact">Contact</a>
                                                 
-                                                <div className="business-actions">
-                                                    <div className="social-icons">
-                                                        {business.Facebook ? (
+                                                {/* Only show social icons section if at least one social media link exists */}
+                                                {((business.Facebook && business.Facebook.trim()) || 
+                                                  (business.Pinterest && business.Pinterest.trim())) && (
+                                                    <div className="social-icons" style={{ marginBottom: '15px' }}>
+                                                        {business.Facebook && business.Facebook.trim() && (
                                                             <a 
                                                                 href={business.Facebook.startsWith('http') ? business.Facebook : `https://facebook.com/${business.Facebook}`} 
                                                                 target="_blank" 
@@ -517,11 +467,9 @@ const DirectoryDetail = () => {
                                                             >
                                                                 f
                                                             </a>
-                                                        ) : (
-                                                            <div className="social-icon facebook-icon">f</div>
                                                         )}
                                                         
-                                                        {business.Pinterest ? (
+                                                        {business.Pinterest && business.Pinterest.trim() && (
                                                             <a 
                                                                 href={business.Pinterest.startsWith('http') ? business.Pinterest : `https://pinterest.com/${business.Pinterest}`} 
                                                                 target="_blank" 
@@ -530,17 +478,16 @@ const DirectoryDetail = () => {
                                                             >
                                                                 P
                                                             </a>
-                                                        ) : (
-                                                            <div className="social-icon pinterest-icon">P</div>
                                                         )}
                                                     </div>
-                                                    <button 
-                                                        className="profile-button" 
-                                                        onClick={() => handleProfileClick(business)}
-                                                    >
-                                                        Profile
-                                                    </button>
-                                                </div>
+                                                )}
+                                                
+                                                <button 
+                                                    className="profile-button" 
+                                                    onClick={() => handleProfileClick(business)}
+                                                >
+                                                    Profile
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
