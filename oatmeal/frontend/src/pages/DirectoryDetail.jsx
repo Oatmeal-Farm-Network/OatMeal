@@ -458,32 +458,32 @@ const DirectoryDetail = () => {
     }, [selectedCountry, businessType]);
 
     // Fetch businesses when country and state (or just country if state not applicable) are selected
-   useEffect(() => {
-    if (!selectedCountry) {
-        setBusinesses([]);
-        return;
-    }
-
-    const fetchBusinesses = async () => {
-        setLoading(true);
-        setError(null);
-
-        let url = `${API_ENDPOINTS.BUSINESSES}?country=${encodeURIComponent(selectedCountry)}&BusinessTypeID=${encodeURIComponent(businessType)}`;
-        if (selectedState) {
-        url += `&state=${encodeURIComponent(selectedState)}`;
+    useEffect(() => {
+        if (!selectedCountry) {
+            setBusinesses([]);
+            return;
         }
 
-        try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Failed to fetch businesses: ${response.statusText}`);
-        const data = await response.json();
-        setBusinesses(data || []);
-        } catch (err) {
-        console.error("Fetch failed:", err);
-        setError(err.message);
-        }
+        const fetchBusinesses = async () => {
+            setLoading(true);
+            setError(null);
 
-        setLoading(false);
+            let url = `${API_ENDPOINTS.BUSINESSES}?country=${encodeURIComponent(selectedCountry)}&BusinessTypeID=${encodeURIComponent(businessType)}`;
+            if (selectedState) {
+            url += `&state=${encodeURIComponent(selectedState)}`;
+            }
+
+            try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch businesses: ${response.statusText}`);
+            const data = await response.json();
+            setBusinesses(data || []);
+            } catch (err) {
+            console.error("Fetch failed:", err);
+            setError(err.message);
+            }
+
+            setLoading(false);
     };
 
     fetchBusinesses();
