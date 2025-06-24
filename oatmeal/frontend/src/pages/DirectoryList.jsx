@@ -1,32 +1,32 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-// Import images from the new location
-import agriAssociaImg from '../images/agri_associa.png';
-import artisianImg from '../images/artisian.jpg';
-import brImg from '../images/br.jpg';
-import crafOrgImg from '../images/craf_org.jpg';
-import farmersMarketImg from '../images/farmers_market.jpg';
-import farmsRanchesImg from '../images/farms_ranches.jpg';
-import fiberImg from '../images/fiber.jpg'; // Assuming fiber.jpg is the correct name for Fiber Cooperatives
-import fiberMillsImg from '../images/fiber_mills.jpg';
-import fisheriesImg from '../images/fisheries.jpeg';
-import fishermenImg from '../images/fishermen.jpeg';
-import foodCopImg from '../images/food_cop.jpg';
-import foodHubImg from '../images/food_hub.jpg';
-import groceryStoreImg from '../images/grocery_store.jpeg';
-import manfacImg from '../images/manfac.jpeg'; // Assuming manfac.jpeg is for Manufacturers
-import marinasImg from '../images/marinas.jpeg';
-import meatImg from '../images/meat.jpg'; // Assuming meat.jpg is for Meat Wholesalers
-import realEstateImg from '../images/real_estate.webp';
-import restaurantsImg from '../images/restaurants.jpg';
-import retailersImg from '../images/retailers.png';
-import serviceProvidersImg from '../images/service_providers.webp';
-import universitiesImg from '../images/universities.jpeg';
-import vetImg from '../images/vet.webp';
-import vineyardsImg from '../images/vineyards.jpeg';
-import wineriesImg from '../images/wineries.png';
-import othersImg from '../images/others.jpg';
+// Import icons from the new Icons location
+import agriAssociaImg from '../Icons/Agricultural Associations.jpg';
+import artisianImg from '../Icons/Artisan Producers.jpg';
+import brImg from '../Icons/Business Resources.jpg';
+import crafOrgImg from '../Icons/Crafter-organizations.jpg';
+import farmersMarketImg from '../Icons/Farmers Markets.jpg';
+import farmsRanchesImg from '../Icons/Farms_Ranches.jpg';
+import fiberImg from '../Icons/Fiber Cooperatives.jpg';
+import fiberMillsImg from '../Icons/Fiber Mills.jpg';
+import fisheriesImg from '../Icons/Fisheries.jpg';
+import fishermenImg from '../Icons/Fishermen.jpg';
+import foodCopImg from '../Icons/Food Cooperatives.jpg';
+import foodHubImg from '../Icons/Food Hubs.jpg';
+import groceryStoreImg from '../Icons/Grocery Stores.jpg';
+import manfacImg from '../Icons/Manufacturers.jpg';
+import marinasImg from '../Icons/Marinas.jpg';
+import meatImg from '../Icons/Meat Wholesalers.jpg';
+import realEstateImg from '../Icons/Real Estate Agents.jpg';
+import restaurantsImg from '../Icons/Restaurants.jpg';
+import retailersImg from '../Icons/Retailers.jpg';
+import serviceProvidersImg from '../Icons/Service Providers.jpg';
+import universitiesImg from '../Icons/Universities.jpg';
+import vetImg from '../Icons/Veterinarians.jpg';
+import vineyardsImg from '../Icons/Vineyards.jpg';
+import wineriesImg from '../Icons/Wineries.jpg';
+import othersImg from '../Icons/Other.jpg';
 
 const directoryCategories = [
     { title: "Agricultural Associations", slug: "agricultural-associations", desc: "Farmers unite for shared resources", imgSrc: agriAssociaImg },
@@ -104,14 +104,12 @@ const DirectoryList = () => {
 
     return (
         <div style={pageStyle}>
-            <h1>Welcome to OatMeal</h1>
             <div style={gridStyle}>
                 {directoryCategories.map((dir) => (
                     <div key={dir.slug} style={cardStyle}>
                         <div>
                             <img src={dir.imgSrc} alt={dir.title} style={imgStyle} />
                             <h3>{dir.title}</h3>
-                            <p>{dir.desc}</p>
                         </div>
                         <Link to={`/directory/${dir.slug}`} style={buttonStyle}>
                             Explore
